@@ -1,62 +1,93 @@
-<img src="rootstock-logo.jpg" alt="RSK Logo" style="width:100%; height: auto;" />
+<img src="rootstock-logo.jpg" alt="RSK Logo" style="width:20%; height: auto; align-items: center;" />
+# SatoshiFund
 
-## Rootstock Wagmi & Shadcn Starter Kit
+SatoshiFund is a Bitcoin-backed lending platform built on Rootstock (RSK). It allows Bitcoin holders to leverage their BTC as collateral to access liquidity in the form of stablecoins, without needing to sell their BTC. The platform offers secure, customizable loans, flexible repayment options, and real-time price alerts.
 
-This starter kit provides a foundation for building decentralized applications (dApps) on the Rootstock blockchain using [React](https://react.dev/learn), [Wagmi](https://wagmi.sh/) and [Shadcn](https://ui.shadcn.com/) libraries. It includes features such as:
+**Live App**: [https://satoshifund.vercel.app/](https://satoshifund.vercel.app/)
 
-- Integration with [Rainbowkit](https://www.rainbowkit.com/) for wallet connection and interacting with smart contracts
-- Sample integrations of interactions with tokens like ERC20, ERC721, and ERC1155.
-- Prettier and eslint configured for project files.
-- Tailwindcss and Shadcn configured for style customization.
+## Smart Contract Addresses (Rootstock Testnet)
 
-Check the live demo here: https://rsk-wagmi-starter-kit.vercel.app/
+- **RBTC Token Address**: `0xb1DCFD6B8E1EA70e6FCc72Ff013a4306006830e8`
+- **USDT Token Address**: `0x3B1f74b345bc49CF0300f987063D6a98F29C3132`
+- **SatoshiFund Contract Address**: `0x1454F8FA7b48b6127eEC8ed0E78F9879764a51e9`
 
-## Project Structure
+## Features
 
-```text
-.
-├── public
-├── src
-│   ├── App.tsx
-│   ├── assets
-│   ├── components
-│   ├── config
-│   │   ├── providers.tsx
-│   │   ├── rainbowkitConfig.ts
-│   │   └── wagmiProviderConfig.ts
-│   ├── lib
-│   │   └── utils
-│   ├── main.tsx
-│   ├── pages
-├── package.json
-```
+### 1. Borrow Without Selling
 
-## Supported Networks
+Bitcoin holders can deposit BTC as collateral and borrow stablecoins, providing cash liquidity without selling their BTC holdings.
 
-- Rootstock Mainnet
-- Rootstock Testnet
+### 2. Flexible Collateral and Interest Rates
 
-## Usage
+SatoshiFund offers customized collateralization ratios and interest rates, allowing users to receive tailored loan terms based on their profile.
 
-### Setup
+### 3. Transparent and Secure
 
-#### 1. Clone Repository
+The platform is built on Rootstock, leveraging its smart contract capabilities and ensuring that BTC remains within the Bitcoin ecosystem.
 
-```shell
-git clone https://github.com/chrisarevalodev/rsk-wagmi-starter-kit.git
-cd rsk-wagmi-starter-kit
-```
+### 4. Easy Repayment
 
-#### 2. Install Dependencies
+Users can repay their loans with flexible repayment options. Interest is calculated only on the outstanding balance, allowing users to manage their debt effectively.
 
-> **Note**: We recommend using yarn package manager given that there are some conflicts when installing some packages with npm.
+### 5. Real-Time Price Alerts
 
-```shell
-yarn
-```
+Real-time notifications alert users to significant changes in BTC price, helping them manage their loans and avoid potential liquidations.
 
-#### 3. Run Project
+## Future Scope
 
-```shell
-yarn dev
-```
+- **Peer-to-Peer (P2P) Lending**: Enable direct connections between lenders and borrowers for a fully decentralized lending experience.
+- **Yield Farming**: Provide yield opportunities through staking and liquidity provision.
+- **Multi-Asset Collateral**: Expand collateral options to include additional cryptocurrencies.
+- **Fiat Integration**: Introduce fiat on/off ramps for direct bank transfers.
+- **Enhanced Security**: Offer optional DeFi insurance for added security on loaned assets.
+- **DAO Governance**: Implement a DAO for community-led governance and platform decision-making.
+
+## Project Setup## Project Setup
+
+To run the project locally, follow these steps:
+
+1. **Clone the repository**:
+
+   ```bash
+   git clone <repository-url>
+   cd <repository-folder>
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+3. **Start the local development server**:
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Configure Environment Variables (if required)**: Ensure the smart contract addresses are set in your frontend environment as needed.
+
+## Technical Details
+
+### Dependencies
+
+- Web3.js: Used to interact with the Rootstock blockchain and smart contracts.
+- React.js: For the front-end framework.
+- Axios: For handling HTTP requests where needed.
+
+### Smart Contracts Overview
+
+- RBTC Token (0xb1DCFD6B8E1EA70e6FCc72Ff013a4306006830e8): Custom token on the testnet representing BTC.
+- USDT Token (0x3B1f74b345bc49CF0300f987063D6a98F29C3132): Custom stablecoin for simulating USDT.
+- SatoshiFund Contract (0x1454F8FA7b48b6127eEC8ed0E78F9879764a51e9): Main contract handling loan logic, including collateral management, loan requests, repayments, and liquidation.
+
+### Testing Setup
+
+Since no testnet bridge was available on Rootstock, mock tokens (RBTC for Bitcoin and USDT for stablecoin) were created to simulate BTC and USDT behavior for accurate development and testing.
+
+### How It Works
+
+- **Collateral Deposit**: Users deposit RBTC as collateral to secure their loans.
+- **Request Loan**: Based on collateral and profile-based terms, users can request stablecoin loans.
+- **Repay Loan**: Users repay loans in parts or full. Collateral is released when loans are repaid.
+- **Manage Risks**: Real-time alerts and customizable terms help users manage their collateral against BTC price fluctuations.
