@@ -2,90 +2,111 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-
-    --radius: 0.5rem;
+@layer components {
+  .bg-dark-900 {
+    background-color: #0a0a0a;
+  }
+  .bg-dark-800 {
+    background-color: #141414;
+  }
+  .bg-dark-700 {
+    background-color: #1a1a1a;
+  }
+  .card-gradient {
+    @apply relative overflow-hidden;
+    background: linear-gradient(to bottom right, #141414, #1a1a1a, #141414);
+    background-size: 200% 200%;
+    animation: gradient 15s ease infinite;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-black text-foreground;
+    @apply bg-dark-900 text-white;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.15), transparent 50%),
+      radial-gradient(circle at 0% 50%, rgba(249, 115, 22, 0.1), transparent 50%),
+      radial-gradient(circle at 100% 50%, rgba(249, 115, 22, 0.1), transparent 50%);
+    background-attachment: fixed;
   }
 }
 
-@font-face {
-  font-family: "NeueMachina-100";
-  src: url("/fonts/NeueMachina-Light.otf") format("opentype");
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-@font-face {
-  font-family: "NeueMachina-400";
-  src: url("/fonts/NeueMachina-Regular.otf") format("opentype");
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
 }
 
-@font-face {
-  font-family: "NeueMachina-800";
-  src: url("/fonts/NeueMachina-Ultrabold.otf") format("opentype");
+@keyframes glow {
+  0% { box-shadow: 0 0 5px rgb(59 130 246), 0 0 20px rgb(59 130 246); }
+  50% { box-shadow: 0 0 10px rgb(59 130 246), 0 0 30px rgb(59 130 246); }
+  100% { box-shadow: 0 0 5px rgb(59 130 246), 0 0 20px rgb(59 130 246); }
 }
 
-.scroller {
-  width: calc(100vw - 2rem) !important;
-  max-width: 900px;
-  margin-inline: auto;
-  padding-block: 30px;
-  border-radius: 10px;
-  color: black;
-  font-size: larger;
-  @apply bg-fuchsia-500 font-neueMachinaBold;
+.card-gradient::before {
+  content: '';
+  @apply absolute inset-0 bg-mesh-pattern opacity-5;
 }
 
-.inner-scroller {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
+.hover-float {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.active-scroller {
-  width: 100%;
-  overflow: hidden;
+.hover-float:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 5px rgb(59 130 246), 0 0 20px rgb(59 130 246);
 }
 
-.active-scroller .inner-scroller p {
-  white-space: nowrap;
+.glass-effect {
+  @apply backdrop-blur-lg bg-opacity-20 border border-white/10;
 }
 
-.active-scroller .inner-scroller {
-  width: fit-content;
-  flex-wrap: nowrap;
-  animation: scroll 40s linear infinite;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-@keyframes scroll {
+::-webkit-scrollbar-track {
+  @apply bg-dark-800 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gradient-to-b from-accent-blue to-accent-purple rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply from-accent-purple to-accent-blue;
+}
+
+/* Animations */
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
   to {
-    transform: translate(calc(-50% - 1.5rem));
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-300;
+}
+
+.card-hover:hover {
+  @apply transform -translate-y-1 shadow-lg;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
 }
