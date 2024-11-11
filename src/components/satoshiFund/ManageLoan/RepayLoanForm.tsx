@@ -9,7 +9,7 @@ import {
   USDT_TOKEN_ADDRESS,
 } from "@/lib/utils/constants";
 import SATOSHI_FUND_ABI from "@/contracts/abi/SatoshiFund.json";
-import STABLECOIN_ABI from "@/contracts/abi/Stablecoin.json";
+import STABLECOIN_ABI from "@/contracts/abi/StableCoin.json";
 import { useToast } from "@/components/ui/use-toast";
 import { ethers } from "ethers";
 import { waitForTransactionReceipt } from "wagmi/actions";
