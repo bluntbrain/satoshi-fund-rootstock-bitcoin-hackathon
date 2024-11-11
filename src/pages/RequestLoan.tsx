@@ -3,7 +3,7 @@ import { Button } from "../components/satoshiFund/Button";
 import Input from "../components/satoshiFund/Input";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { SATOSHI_FUND_ADDRESS } from "@/lib/utils/constants";
-import SATOSHI_FUND_ABI from "@/contracts/abi/SatoshiFund.json";
+import abi from "@/contracts/abi/SatoshiFund.json";
 import { useToast } from "@/components/ui/use-toast";
 import { ethers } from "ethers";
 import { waitForTransactionReceipt } from "wagmi/actions";
@@ -23,7 +23,7 @@ const RequestLoan: React.FC = () => {
 
   const { data: loanDetails, isLoading: isLoanLoading } = useReadContract({
     address: SATOSHI_FUND_ADDRESS,
-    abi: SATOSHI_FUND_ABI,
+    abi: abi,
     functionName: "getLoanDetails",
     args: [address],
   }) as { data: LoanDetails; isLoading: boolean };
@@ -62,7 +62,7 @@ const RequestLoan: React.FC = () => {
     setLoading(true);
     try {
       const txHash = await writeContractAsync({
-        abi: SATOSHI_FUND_ABI,
+        abi: abi,
         address: SATOSHI_FUND_ADDRESS,
         functionName: "requestLoan",
         args: [
