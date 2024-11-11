@@ -15,6 +15,11 @@ const MarketOverview: React.FC = () => {
   const [timeframe, setTimeframe] = useState(7);
   const { data, loading } = useHistoricalBitcoinData(timeframe);
 
+  const formattedData = data?.map((entry) => ({
+    date: new Date(entry.date).toLocaleDateString(),
+    price: entry.price,
+  }));
+
   interface TooltipProps {
     active?: boolean;
     payload?: {
@@ -40,7 +45,7 @@ const MarketOverview: React.FC = () => {
   };
 
   return (
-    <Card className="h-[400px]">
+    <Card className="h-[400px]" hover={false} gradient={false}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold">Bitcoin Price</h2>
         <select
@@ -63,7 +68,7 @@ const MarketOverview: React.FC = () => {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
+            <LineChart data={formattedData}>
               <XAxis
                 dataKey="date"
                 stroke="#4B5563"

@@ -4,12 +4,17 @@ import Input from "../Input";
 import { DollarSign, AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { useWriteContract } from "wagmi";
-import { SATOSHI_FUND_ADDRESS } from "@/lib/utils/constants";
+import {
+  SATOSHI_FUND_ADDRESS,
+  USDT_TOKEN_ADDRESS,
+} from "@/lib/utils/constants";
 import SATOSHI_FUND_ABI from "@/contracts/abi/SatoshiFund.json";
+import STABLECOIN_ABI from "@/contracts/abi/Stablecoin.json";
 import { useToast } from "@/components/ui/use-toast";
 import { ethers } from "ethers";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { rainbowkitConfig } from "@/config/rainbowkitConfig";
+import { Abi } from "viem";
 
 interface RepayLoanFormProps {
   loanId: string;
@@ -32,7 +37,14 @@ const RepayLoanForm: React.FC<RepayLoanFormProps> = ({
   const { writeContractAsync } = useWriteContract();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("Repaying loan", loanId);
+    console.log(
+      "Repaying loan",
+      loanId,
+      amount,
+      totalDue,
+      principal,
+      interestAccrued
+    );
     e.preventDefault();
     if (!amount) return;
 
@@ -47,16 +59,34 @@ const RepayLoanForm: React.FC<RepayLoanFormProps> = ({
 
     setLoading(true);
     try {
-      const txHash = await writeContractAsync({
+      console.log("Approving stablecoin spend...");
+      const approveTxHash = await writeContractAsync({
+        abi: STABLECOIN_ABI as Abi,
+        address: USDT_TOKEN_ADDRESS,
+        functionName: "approve",
+        args: [SATOSHI_FUND_ADDRESS, ethers.parseUnits(amount, 18)],
+      });
+
+      console.log("Approval transaction hash:", approveTxHash);
+
+      await waitForTransactionReceipt(rainbowkitConfig, {
+        confirmations: 1,
+        hash: approveTxHash,
+      });
+
+      console.log("Attempting to repay loan with amount:", amount);
+      const repayTxHash = await writeContractAsync({
         abi: SATOSHI_FUND_ABI,
         address: SATOSHI_FUND_ADDRESS,
         functionName: "repayLoan",
         args: [ethers.parseUnits(amount, 18)],
       });
 
+      console.log("Repayment transaction hash:", repayTxHash);
+
       await waitForTransactionReceipt(rainbowkitConfig, {
         confirmations: 1,
-        hash: txHash,
+        hash: repayTxHash,
       });
 
       toast({

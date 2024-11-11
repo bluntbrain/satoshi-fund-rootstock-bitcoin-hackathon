@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../components/satoshiFund/Button";
 import Input from "../components/satoshiFund/Input";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ethers } from "ethers";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { rainbowkitConfig } from "@/config/rainbowkitConfig";
+import axios from "axios";
 
 interface LoanDetails {
   active: boolean;
@@ -17,8 +18,6 @@ const RequestLoan: React.FC = () => {
   const { address } = useAccount();
   const [loanAmount, setLoanAmount] = useState("");
   const [btcPriceUSD, setBtcPriceUSD] = useState("");
-  const [collateralizationRatio, setCollateralizationRatio] = useState("");
-  const [interestRatePerDay, setInterestRatePerDay] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -31,15 +30,24 @@ const RequestLoan: React.FC = () => {
 
   const { writeContractAsync } = useWriteContract();
 
+  useEffect(() => {
+    const fetchBtcPrice = async () => {
+      try {
+        const response = await axios.get(
+          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+        );
+        setBtcPriceUSD(response.data.bitcoin.usd.toString());
+      } catch (error) {
+        console.error("Error fetching BTC price:", error);
+      }
+    };
+
+    fetchBtcPrice();
+  }, []);
+
   const handleRequestLoan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !loanAmount ||
-      !btcPriceUSD ||
-      !collateralizationRatio ||
-      !interestRatePerDay
-    )
-      return;
+    if (!loanAmount || !btcPriceUSD) return;
 
     if (loanDetails?.active) {
       toast({
@@ -60,8 +68,8 @@ const RequestLoan: React.FC = () => {
         args: [
           ethers.parseUnits(loanAmount, 18),
           ethers.parseUnits(btcPriceUSD, 18),
-          ethers.parseUnits(collateralizationRatio, 18),
-          ethers.parseUnits(interestRatePerDay, 18),
+          ethers.parseUnits("150", 18),
+          ethers.parseUnits("1", 18),
         ],
       });
 
@@ -76,9 +84,6 @@ const RequestLoan: React.FC = () => {
       });
 
       setLoanAmount("");
-      setBtcPriceUSD("");
-      setCollateralizationRatio("");
-      setInterestRatePerDay("");
     } catch (error) {
       toast({
         title: "Error",
@@ -106,30 +111,24 @@ const RequestLoan: React.FC = () => {
         />
         <Input
           label="BTC Price (USD)"
-          type="number"
+          type="text"
           value={btcPriceUSD}
-          onChange={(e) => setBtcPriceUSD(e.target.value)}
-          placeholder="Enter current BTC price"
-          step="0.01"
-          disabled={loading}
+          readOnly
+          disabled
         />
         <Input
           label="Collateralization Ratio (%)"
-          type="number"
-          value={collateralizationRatio}
-          onChange={(e) => setCollateralizationRatio(e.target.value)}
-          placeholder="Enter collateralization ratio"
-          step="1"
-          disabled={loading}
+          type="text"
+          value="150"
+          readOnly
+          disabled
         />
         <Input
           label="Interest Rate Per Day (%)"
-          type="number"
-          value={interestRatePerDay}
-          onChange={(e) => setInterestRatePerDay(e.target.value)}
-          placeholder="Enter interest rate per day"
-          step="0.01"
-          disabled={loading}
+          type="text"
+          value="1"
+          readOnly
+          disabled
         />
         <Button
           type="submit"

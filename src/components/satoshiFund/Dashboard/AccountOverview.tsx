@@ -34,7 +34,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({
           <h3 className="text-lg font-medium">Active Loans</h3>
         </div>
         <p className="text-2xl font-bold">
-          {isLoading ? "Loading..." : loanDetails.active ? "1" : "0"} RBTC
+          {isLoading ? "Loading..." : loanDetails.active ? "1" : "0"}
         </p>
         <p className="text-sm text-gray-400 mt-1">
           {/* {isLoading ? "Loading..."  : activeLoans} active loan */}
