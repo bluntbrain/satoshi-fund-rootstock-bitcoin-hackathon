@@ -8,55 +8,56 @@ import LoanHealthIndicator from "../components/satoshiFund/ManageLoan/LoanHealth
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
+import { useAccount, useReadContract } from "wagmi";
+import { SATOSHI_FUND_ADDRESS } from "@/lib/utils/constants";
+import SATOSHI_FUND_ABI from "@/contracts/abi/SatoshiFund.json";
+import { ethers } from "ethers";
 
 interface Loan {
-  startDate: number;
-  principal: number;
-  collateral: number;
-  interestAccrued: number;
+  startDate: string | number;
+  principal: bigint;
+  collateral: bigint;
+  interestAccrued: bigint;
   ltv: number;
   id: string;
   status: string;
+  active: boolean;
 }
 
 const ManageLoans: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [loans, setLoans] = useState<Loan[]>([]);
+  const { address } = useAccount();
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [isRepayModalOpen, setIsRepayModalOpen] = useState(false);
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
+  const [isLoanLoading, setIsLoanLoading] = useState(true);
+
+  const { data: loanDetails } = useReadContract({
+    address: SATOSHI_FUND_ADDRESS,
+    abi: SATOSHI_FUND_ABI,
+    functionName: "getLoanDetails",
+    args: [address],
+  }) as { data: Loan };
 
   useEffect(() => {
-    fetchLoans();
-  }, []);
-
-  const fetchLoans = async () => {
-    setLoading(true);
-    setLoans([]);
-    try {
-      // const loanDetails = await getLoanDetails();
-      // if (loanDetails) {
-      //   setLoans([loanDetails]);
-      // }
-    } catch (error) {
-      console.error("Error fetching loans:", error);
-    } finally {
-      setLoading(false);
+    if (loanDetails) {
+      setIsLoanLoading(false);
     }
-  };
+  }, [loanDetails]);
+
+  const loans = loanDetails ? [loanDetails] : [];
 
   const handleRepaySuccess = () => {
     setIsRepayModalOpen(false);
-    fetchLoans();
+    // Optionally refetch loan details here
   };
 
   const handleTopUpSuccess = () => {
     setIsTopUpModalOpen(false);
-    fetchLoans();
+    // Optionally refetch loan details here
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1200px] mx-auto">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-white">Manage Loans</h1>
         <Link to="/request">
@@ -67,22 +68,31 @@ const ManageLoans: React.FC = () => {
         </Link>
       </div>
 
-      {loading ? (
+      {isLoanLoading ? (
         <Card>
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue"></div>
           </div>
         </Card>
       ) : loans.length > 0 ? (
-        loans.map((loan) => (
-          <Card key={loan.id}>
+        loans.map((loan, index) => (
+          <Card key={index} hover={false} gradient={false}>
             <div className="space-y-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-bold">Loan #{loan.id}</h2>
+                  <h2 className="text-xl font-bold">Loan #{index + 1}</h2>
                   <p className="text-gray-400">
                     Started{" "}
-                    {new Date(loan.startDate * 1000).toLocaleDateString()}
+                    {new Date(
+                      Number((loan as Loan).startDate) * 1000
+                    ).toLocaleDateString()}
+                  </p>
+                  <p
+                    className={`text-sm font-medium mt-1 ${
+                      loan.active ? "text-accent-green" : "text-accent-red"
+                    }`}
+                  >
+                    {loan.active ? "Active" : "Inactive"}
                   </p>
                 </div>
                 <div className="flex space-x-3">
@@ -111,25 +121,25 @@ const ManageLoans: React.FC = () => {
                 <div className="p-4 bg-dark-700 rounded-lg">
                   <p className="text-sm text-gray-400">Principal</p>
                   <p className="text-xl font-bold mt-1">
-                    {formatCurrency(Number(loan.principal))}
+                    {Number(ethers.formatEther(loan.principal))} RBTC
                   </p>
                 </div>
                 <div className="p-4 bg-dark-700 rounded-lg">
                   <p className="text-sm text-gray-400">Collateral</p>
                   <p className="text-xl font-bold mt-1">
-                    {loan.collateral} BTC
+                    {Number(ethers.formatEther(loan.collateral))} RBTC
                   </p>
                 </div>
                 <div className="p-4 bg-dark-700 rounded-lg">
                   <p className="text-sm text-gray-400">Interest Accrued</p>
                   <p className="text-xl font-bold mt-1">
-                    {formatCurrency(loan.interestAccrued)}
+                    {formatCurrency(Number(loan.interestAccrued))}
                   </p>
                 </div>
               </div>
 
               <LoanHealthIndicator
-                ltv={loan.ltv}
+                ltv={loan.ltv || 0}
                 liquidationThreshold={150}
                 warningThreshold={130}
               />
@@ -158,8 +168,10 @@ const ManageLoans: React.FC = () => {
         {selectedLoan && (
           <RepayLoanForm
             loanId={selectedLoan.id}
-            principal={selectedLoan.principal}
-            interestAccrued={selectedLoan.interestAccrued}
+            principal={Number(ethers.formatEther(selectedLoan.principal))}
+            interestAccrued={Number(
+              ethers.formatEther(selectedLoan.interestAccrued)
+            )}
             onSuccess={handleRepaySuccess}
           />
         )}
@@ -173,8 +185,10 @@ const ManageLoans: React.FC = () => {
         {selectedLoan && (
           <TopUpCollateralForm
             loanId={selectedLoan.id}
-            currentCollateral={selectedLoan.collateral}
-            currentLTV={selectedLoan.ltv}
+            currentCollateral={Number(
+              ethers.formatEther(selectedLoan.collateral)
+            )}
+            currentLTV={selectedLoan.ltv || 0}
             onSuccess={handleTopUpSuccess}
           />
         )}

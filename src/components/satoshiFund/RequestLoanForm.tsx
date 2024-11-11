@@ -1,45 +1,80 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "./Button";
 import Input from "./Input";
 import { Bitcoin, DollarSign, AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
-import { useAccount } from "wagmi";
+import { useAccount, useWriteContract } from "wagmi";
+import { parseEther } from "viem";
+import { SATOSHI_FUND_ADDRESS } from "@/lib/utils/constants";
+import { useToast } from "@/components/ui/use-toast";
+import SATOSHI_FUND_ABI from "@/contracts/abi/SatoshiFund.json";
+import { rainbowkitConfig } from "@/config/rainbowkitConfig";
+import { waitForTransactionReceipt } from "wagmi/actions";
 
 const RequestLoanForm: React.FC = () => {
   const { address } = useAccount();
-  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
   const [collateral, setCollateral] = useState("");
   const [loanAmount, setLoanAmount] = useState("");
   const [btcPrice, setBtcPrice] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [requestData, setRequestData] = useState<`0x${string}` | null>(null);
 
-  useEffect(() => {
-    const fetchPrice = async () => {
-      // const price = await getBTCPrice();
-      // if (price) setBtcPrice(price);
-    };
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 60000);
-    return () => clearInterval(interval);
-  }, [getBTCPrice]);
+  const { writeContractAsync } = useWriteContract();
 
   const calculateLTV = () => {
-    if (!btcPrice || !collateral || !loanAmount) return 0;
-    const collateralValue = Number(collateral) * btcPrice;
-    return (Number(loanAmount) / collateralValue) * 100;
+    return 150;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setBtcPrice(20000);
     e.preventDefault();
-    if (!address || !collateral || !loanAmount) return;
+    if (!address || !collateral || !loanAmount || !btcPrice) return;
 
     try {
-      // const txHash = await requestLoan(collateral, loanAmount);
-      // console.log('Loan requested:', txHash);
+      // convert values to contract format
+      // const collateralInWei = parseEther(collateral);
+      const loanAmountInWei = parseEther(loanAmount);
+      const btcPriceInWei = parseEther(btcPrice.toString());
+      const collateralizationRatio = 150;
+      const interestRatePerDay = 1;
+
+      const txHash = await writeContractAsync({
+        abi: SATOSHI_FUND_ABI,
+        address: SATOSHI_FUND_ADDRESS,
+        functionName: "requestLoan",
+        args: [
+          loanAmountInWei,
+          btcPriceInWei,
+          collateralizationRatio,
+          interestRatePerDay,
+        ],
+      });
+
+      await waitForTransactionReceipt(rainbowkitConfig, {
+        confirmations: 1,
+        hash: txHash,
+      });
+
+      toast({
+        title: "Success",
+        description: "Loan request submitted successfully!",
+      });
+
+      setRequestData(txHash);
+      setIsSuccess(true);
+
       // Reset form
       setCollateral("");
       setLoanAmount("");
-    } catch (err) {
-      console.error("Error requesting loan:", err);
+    } catch (error) {
+      console.error("Error requesting loan:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit loan request",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -48,8 +83,17 @@ const RequestLoanForm: React.FC = () => {
   const ltv = calculateLTV();
   const isLTVSafe = ltv <= 150;
 
+  // add logging
+  console.log("[RequestLoanForm] Submitting loan request:", {
+    collateral,
+    loanAmount,
+    btcPrice,
+    collateralizationRatio: 150,
+    interestRatePerDay: 120,
+  });
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
       <div>
         <Input
           label="Collateral Amount (BTC)"
@@ -60,6 +104,7 @@ const RequestLoanForm: React.FC = () => {
           step="0.001"
           icon={<Bitcoin className="text-accent-blue" size={20} />}
           disabled={loading}
+          helper="Enter the amount of BTC you want to use as collateral"
         />
         {btcPrice && collateral && (
           <p className="text-sm text-gray-400 mt-1">
@@ -78,6 +123,7 @@ const RequestLoanForm: React.FC = () => {
           step="100"
           icon={<DollarSign className="text-accent-green" size={20} />}
           disabled={loading}
+          helper="Enter the amount you want to borrow in USD"
         />
       </div>
 
@@ -103,12 +149,6 @@ const RequestLoanForm: React.FC = () => {
         </div>
       )}
 
-      {/* {error && (
-        <div className="p-4 bg-accent-red/10 rounded-lg">
-          <p className="text-accent-red text-sm">{error}</p>
-        </div>
-      )} */}
-
       <Button
         type="submit"
         disabled={
@@ -118,6 +158,20 @@ const RequestLoanForm: React.FC = () => {
       >
         {loading ? "Processing..." : "Request Loan"}
       </Button>
+
+      {isSuccess && (
+        <p className="text-sm text-accent-green text-center">
+          Transaction confirmed! View on explorer:{" "}
+          <a
+            href={`https://explorer.testnet.rsk.co/tx/${requestData}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            {requestData?.slice(0, 6)}...{requestData?.slice(-4)}
+          </a>
+        </p>
+      )}
     </form>
   );
 };

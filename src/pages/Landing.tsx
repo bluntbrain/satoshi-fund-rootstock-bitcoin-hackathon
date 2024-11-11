@@ -133,7 +133,7 @@ const Landing: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative py-32 bg-dark-800" id="learn-more">
+      <div className="relative py-32 bg-dark-800 rounded-2xl" id="learn-more">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,_var(--tw-gradient-stops))] from-transparent via-bitcoin/5 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -318,7 +318,7 @@ const Landing: React.FC = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="relative py-20 bg-dark-800">
+      <div className="relative py-20 bg-dark-800 rounded-2xl">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bitcoin/5 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -347,7 +347,7 @@ const Landing: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-dark-900 border-t border-dark-700">
+      <footer className="bg-dark-900 border-t border-dark-700 rounded-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>

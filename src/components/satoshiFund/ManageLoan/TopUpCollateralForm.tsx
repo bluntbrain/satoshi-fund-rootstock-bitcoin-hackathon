@@ -2,6 +2,13 @@ import React, { useState } from "react";
 import { Button } from "../Button";
 import Input from "../Input";
 import { Bitcoin } from "lucide-react";
+import { useWriteContract } from "wagmi";
+import { SATOSHI_FUND_ADDRESS } from "@/lib/utils/constants";
+import SATOSHI_FUND_ABI from "@/contracts/abi/SatoshiFund.json";
+import { useToast } from "@/components/ui/use-toast";
+import { ethers } from "ethers";
+import { waitForTransactionReceipt } from "wagmi/actions";
+import { rainbowkitConfig } from "@/config/rainbowkitConfig";
 
 interface TopUpCollateralFormProps {
   loanId: string;
@@ -18,17 +25,43 @@ const TopUpCollateralForm: React.FC<TopUpCollateralFormProps> = ({
 }) => {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const { writeContractAsync } = useWriteContract();
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("Topping up collateral", loanId);
     e.preventDefault();
     if (!amount) return;
 
+    setLoading(true);
     try {
-      // await approveCollateral(amount);
+      const txHash = await writeContractAsync({
+        abi: SATOSHI_FUND_ABI,
+        address: SATOSHI_FUND_ADDRESS,
+        functionName: "depositCollateral",
+        args: [ethers.parseUnits(amount, 18)],
+      });
+
+      await waitForTransactionReceipt(rainbowkitConfig, {
+        confirmations: 1,
+        hash: txHash,
+      });
+
+      toast({
+        title: "Collateral Added Successfully",
+        description: "Your collateral has been topped up.",
+      });
+
       setAmount("");
       onSuccess?.();
-    } catch (err) {
-      console.error("Error adding collateral:", err);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add collateral",
+        variant: "destructive",
+      });
+      console.error("Error adding collateral:", error);
     } finally {
       setLoading(false);
     }
@@ -43,7 +76,7 @@ const TopUpCollateralForm: React.FC<TopUpCollateralFormProps> = ({
       <div className="p-4 bg-dark-700 rounded-lg space-y-2">
         <div className="flex justify-between">
           <span className="text-gray-400">Current Collateral</span>
-          <span>{currentCollateral} BTC</span>
+          <span>{currentCollateral} RBTC</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-400">Current LTV</span>
@@ -79,12 +112,6 @@ const TopUpCollateralForm: React.FC<TopUpCollateralFormProps> = ({
         icon={<Bitcoin className="text-accent-blue" size={20} />}
         disabled={loading}
       />
-
-      {/* {error && (
-        <div className="p-4 bg-accent-red/10 rounded-lg">
-          <p className="text-accent-red text-sm">{error}</p>
-        </div>
-      )} */}
 
       <Button
         type="submit"

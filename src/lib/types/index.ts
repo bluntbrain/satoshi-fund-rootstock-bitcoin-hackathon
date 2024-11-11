@@ -14,6 +14,7 @@ export interface Loan {
   status: 'active' | 'paid' | 'liquidated';
   ltv: number;
   interestAccrued: number;
+  active?: boolean;
 }
 
 export interface Notification {

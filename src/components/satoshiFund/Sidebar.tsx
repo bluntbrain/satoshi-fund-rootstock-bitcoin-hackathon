@@ -38,16 +38,8 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-orange-500/10 via-transparent to-transparent" />
           </div>
 
-          {/* Content */}
+          {/* content */}
           <div className="relative z-10">
-            <div className="p-6">
-              <Link to="/" className="block">
-                <h2 className="text-2xl font-bold text-white mb-8">
-                  Satoshi Fund
-                </h2>
-              </Link>
-            </div>
-
             <nav className="mt-6">
               {menuItems.map((item) => {
                 const Icon = item.icon;
