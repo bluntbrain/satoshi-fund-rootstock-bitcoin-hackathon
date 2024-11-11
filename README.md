@@ -1,5 +1,6 @@
-<img src="rootstock-logo.jpg" alt="RSK Logo" style="width:20%; height: auto; align-items: center;" />
-# SatoshiFund
+<img src="rootstock-logo.jpg" alt="RSK Logo" style="width:30%; height: auto; align-items: center;" />
+
+### SatoshiFund
 
 SatoshiFund is a Bitcoin-backed lending platform built on Rootstock (RSK). It allows Bitcoin holders to leverage their BTC as collateral to access liquidity in the form of stablecoins, without needing to sell their BTC. The platform offers secure, customizable loans, flexible repayment options, and real-time price alerts.
 
