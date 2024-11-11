@@ -1,13 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import AccountOverview from "../components/satoshiFund/Dashboard/AccountOverview";
 import MarketOverview from "../components/satoshiFund/Dashboard/MarketOverview";
 import LoanActivity from "../components/satoshiFund/Dashboard/LoanActivity";
 import CollateralHealth from "../components/satoshiFund/Dashboard/CollateralHealth";
 import QuickActions from "../components/satoshiFund/Dashboard/QuickActions";
+import DepositCollateral from "../components/satoshiFund/DepositCollateral";
+import { Card } from "../components/satoshiFund/Card";
 import { useAccount } from "wagmi";
 
 const Dashboard: React.FC = () => {
   const { address } = useAccount();
+  const [showDeposit, setShowDeposit] = useState(false);
+
+  const handleAddCollateralClick = () => {
+    setShowDeposit(!showDeposit);
+  };
+
   return (
     <div className="space-y-6 w-full max-w-[1200px] mx-auto">
       <div className="flex justify-between items-center mt-4">
@@ -17,7 +25,13 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <QuickActions />
+      <QuickActions onAddCollateralClick={handleAddCollateralClick} />
+      {showDeposit && (
+        <Card hover={false} gradient={false}>
+          <h2 className="text-xl font-bold mb-4">Deposit Collateral</h2>
+          <DepositCollateral />
+        </Card>
+      )}
       <AccountOverview />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
